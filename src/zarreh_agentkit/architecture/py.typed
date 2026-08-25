@@ -1,0 +1,1 @@
+# Marker file so hatchling bundles non-.py data (the TOML contracts) from this package.

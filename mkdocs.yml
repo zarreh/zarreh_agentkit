@@ -1,0 +1,29 @@
+site_name: zarreh-agentkit
+site_description: Shared substrate for independent agent services
+
+theme:
+  name: material
+  palette:
+    primary: indigo
+  features:
+    - navigation.sections
+    - content.code.copy
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_source: true
+
+nav:
+  - Home: index.md
+  - API Reference:
+      - settings: api/settings.md
+      - observability: api/observability.md
+      - api: api/api.md
+      - cost: api/cost.md
+      - serialization: api/serialization.md
+      - architecture: api/architecture.md

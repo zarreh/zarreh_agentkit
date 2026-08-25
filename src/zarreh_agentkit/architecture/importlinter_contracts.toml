@@ -1,0 +1,32 @@
+# zarreh-agentkit architecture contracts.
+#
+# Consume from a downstream app's pyproject.toml by merging these contracts in,
+# substituting the app's own root package name for <root>. These two rules are
+# the package's opinionated defaults; apps may add stricter contracts of their
+# own (e.g. "chains never import nodes") but must not weaken these two.
+#
+#   1. Layering — the one-way dependency direction every service keeps.
+#   2. Runtime discipline — a fixed set of banned modules under src/.
+
+# --- Contract 1: one-way dependency direction -------------------------------
+# api -> graph -> {agents,chains,tools,guardrails,retrieval} -> schemas/settings
+# Adjust `layers` to the app's real package names; direction must not reverse.
+#
+# [[tool.importlinter.contracts]]
+# name = "Layering: api -> graph -> {agents,chains,tools,guardrails,retrieval} -> schemas/settings"
+# type = "layers"
+# layers = [
+#     "<root>.api",
+#     "<root>.graph",
+#     "<root>.tools",
+#     "<root>.schemas",
+# ]
+
+# --- Contract 2: banned modules under src/ ----------------------------------
+# A written convention nobody checks decays. CI fails on violation.
+#
+# [[tool.importlinter.contracts]]
+# name = "no DSPy or DeepEval outside evals/optimize"
+# type = "forbidden"
+# source_modules = ["<root>"]
+# forbidden_modules = ["dspy", "deepeval"]
