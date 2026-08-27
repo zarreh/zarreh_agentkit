@@ -13,11 +13,14 @@ which is why the public surface is deliberately narrow.
 | Module | What it carries |
 |---|---|
 | `settings` | `AgentSettings` — a `pydantic-settings` base; subclass per service, set `env_prefix` |
-| `observability` | `configure_logging` / `get_logger` + a shared `correlation_id` `ContextVar` |
+| `observability` | `configure_logging` / `get_logger` + a shared `correlation_id` `ContextVar` + `build_tracing_callbacks` (LangSmith tracer, gated on whether an API key is configured) |
 | `api.middleware` | `MaxBodySizeMiddleware` — honest 413 at the ASGI layer (OWASP API4) |
 | `api.rate_limit` | `build_limiter` / `default_rate_limit` — per-route slowapi limiting |
 | `cost` | `CostTrackingHandler` + `CostEntry` — per-node token & cost attribution |
 | `serialization` | `stream_graph_events` — LangGraph `astream_events` → SSE payloads |
+| `guardrails.budget` | `Budget` + `budget_breach_reason` — the tool-call/wall-clock ceiling; breach *response* stays app-specific |
+| `guardrails.projection` | `project_fields` — least-privilege allowlist projection of a Pydantic model; the allowlist itself stays app-specific |
+| `evals` | `run_eval_cli` — the run/print/gate shell behind `make eval`; scenario definitions and metrics stay app-specific |
 | `architecture` | Bundled import-linter contracts, checked in every consumer's CI |
 
 ## Install
@@ -39,6 +42,16 @@ make check   # ruff, mypy --strict, lint-imports, pytest (coverage gate 90)
 ## The extraction rule
 
 A pattern needed **two independent occurrences** before it was promoted to this
-library. `guardrails`, `retrieval`, `evals`, and `mcp` are deliberately absent
-from v0.1 — no second implementation exists yet. They will be extracted at v0.2
-once a second service proves the need.
+library.
+
+**v0.2** adds `observability.build_tracing_callbacks` (identical in three
+consuming services), `guardrails.budget` and `guardrails.projection` (two
+occurrences each), and the `evals` runner shell (one real implementation, one
+consumer waiting on it — promoted because the shell itself is what the
+second service needs, not a new metric set).
+
+Still deliberately absent, pending a validated second occurrence:
+`retrieval` (no consumer has yet needed the intended vector-store shape),
+`mcp` (two services are meant to jointly harden the export convention before
+it lands here — neither has yet), and any general-purpose log/text redaction
+primitive (only one service has this shape so far).

@@ -6,7 +6,12 @@ what keeps the public surface deliberately narrow.
 """
 
 from zarreh_agentkit.cost import CostEntry, CostTrackingHandler
-from zarreh_agentkit.observability import configure_logging, correlation_id, get_logger
+from zarreh_agentkit.observability import (
+    build_tracing_callbacks,
+    configure_logging,
+    correlation_id,
+    get_logger,
+)
 from zarreh_agentkit.settings import AgentSettings
 from zarreh_agentkit.version import __version__
 
@@ -15,6 +20,7 @@ __all__ = [
     "CostEntry",
     "CostTrackingHandler",
     "__version__",
+    "build_tracing_callbacks",
     "configure_logging",
     "correlation_id",
     "get_logger",
