@@ -11,7 +11,7 @@ possible case for extraction.
 
 from __future__ import annotations
 
-from collections.abc import MutableMapping
+from collections.abc import MutableMapping, Sequence
 from contextvars import ContextVar
 from typing import Any
 
@@ -29,8 +29,13 @@ def _add_correlation_id(
     return event_dict
 
 
-def configure_logging(environment: str) -> None:
-    """Configure structlog: pretty console in dev, JSON in production."""
+def configure_logging(environment: str, extra_processors: Sequence[Any] = ()) -> None:
+    """Configure structlog: pretty console in dev, JSON in production.
+
+    `extra_processors` run on the fully-assembled event dict immediately before
+    the renderer -- the place for a redactor, so a call site cannot leak a value
+    by forgetting to scrub it.
+    """
     renderer = (
         structlog.dev.ConsoleRenderer()
         if environment == "development"
@@ -42,6 +47,7 @@ def configure_logging(environment: str) -> None:
             _add_correlation_id,
             structlog.processors.add_log_level,
             structlog.processors.TimeStamper(fmt="iso"),
+            *extra_processors,
             renderer,
         ],
     )

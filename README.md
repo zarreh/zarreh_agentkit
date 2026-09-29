@@ -13,11 +13,11 @@ which is why the public surface is deliberately narrow.
 | Module | What it carries |
 |---|---|
 | `settings` | `AgentSettings` — a `pydantic-settings` base; subclass per service, set `env_prefix` |
-| `observability` | `configure_logging` / `get_logger` + a shared `correlation_id` `ContextVar` + `build_tracing_callbacks` (LangSmith tracer, gated on whether an API key is configured) |
+| `observability` | `configure_logging` (with an `extra_processors` hook that runs just before the renderer, e.g. a redactor) / `get_logger` + a shared `correlation_id` `ContextVar` + `build_tracing_callbacks` (LangSmith tracer, gated on whether an API key is configured) |
 | `api.middleware` | `MaxBodySizeMiddleware` — honest 413 at the ASGI layer (OWASP API4) |
 | `api.rate_limit` | `build_limiter` / `default_rate_limit` — per-route slowapi limiting |
 | `cost` | `CostTrackingHandler` + `CostEntry` — per-node token & cost attribution |
-| `serialization` | `stream_graph_events` — LangGraph `astream_events` → SSE payloads |
+| `serialization` | `stream_graph_events` — LangGraph `astream_events` → SSE payloads, one per genuine node boundary (`name == metadata["langgraph_node"]`), so conditional-edge routers do not surface as steps |
 | `guardrails.budget` | `Budget` + `budget_breach_reason` — the tool-call/wall-clock ceiling; breach *response* stays app-specific |
 | `guardrails.projection` | `project_fields` — least-privilege allowlist projection of a Pydantic model; the allowlist itself stays app-specific |
 | `evals` | `run_eval_cli` — the run/print/gate shell behind `make eval`; scenario definitions and metrics stay app-specific |

@@ -1,6 +1,6 @@
 [project]
 name = "zarreh-agentkit"
-version = "0.2.0"
+version = "0.2.1"
 description = "Shared substrate for agent services: typed settings, observability, dual tracing, ASGI middleware, per-node cost accounting, SSE serialization, budget/projection guardrails, and an eval-runner shell. Extracted only from working implementations, never designed up front."
 readme = "README.md"
 requires-python = ">=3.12"

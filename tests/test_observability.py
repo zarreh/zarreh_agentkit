@@ -1,3 +1,6 @@
+from collections.abc import MutableMapping
+from typing import Any
+
 import structlog
 
 from zarreh_agentkit.observability import (
@@ -22,6 +25,33 @@ def test_configure_logging_production() -> None:
 def test_get_logger_emits_a_record() -> None:
     configure_logging("development")
     get_logger("test").info("hello")  # must not raise
+
+
+def test_extra_processors_run_on_the_assembled_event_just_before_the_renderer() -> None:
+    seen: list[dict[str, object]] = []
+
+    def redact(logger: Any, method: str, event_dict: MutableMapping[str, Any]) -> Any:
+        seen.append(dict(event_dict))
+        event_dict["secret"] = "[redacted]"
+        return event_dict
+
+    rendered: list[str] = []
+
+    def capture(logger: Any, method: str, event_dict: MutableMapping[str, Any]) -> str:
+        rendered.append(str(event_dict))
+        return ""
+
+    configure_logging("production", extra_processors=[redact])
+    structlog.configure(
+        processors=[*structlog.get_config()["processors"][:-1], capture],
+    )
+    get_logger("test").info("hello", secret="hunter2")
+
+    # The redactor saw the fully assembled event (level and timestamp already
+    # added) and its edit is what reached the renderer.
+    assert seen[0]["secret"] == "hunter2"
+    assert "level" in seen[0] and "timestamp" in seen[0]
+    assert "[redacted]" in rendered[0] and "hunter2" not in rendered[0]
 
 
 def test_correlation_id_injected_into_event_dict() -> None:
