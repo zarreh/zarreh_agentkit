@@ -16,6 +16,7 @@ which is why the public surface is deliberately narrow.
 | `observability` | `configure_logging` (with an `extra_processors` hook that runs just before the renderer, e.g. a redactor) / `get_logger` + a shared `correlation_id` `ContextVar` + `build_tracing_callbacks` (LangSmith tracer, gated on whether an API key is configured) |
 | `api.middleware` | `MaxBodySizeMiddleware` — honest 413 at the ASGI layer (OWASP API4) |
 | `api.rate_limit` | `build_limiter` / `default_rate_limit` — per-route slowapi limiting |
+| `api.health` | `build_health_router` — rate-limited `GET /healthz` |
 | `cost` | `CostTrackingHandler` + `CostEntry` — per-node token & cost attribution |
 | `serialization` | `stream_graph_events` — LangGraph `astream_events` → SSE payloads, one per genuine node boundary (`name == metadata["langgraph_node"]`), so conditional-edge routers do not surface as steps |
 | `guardrails.budget` | `Budget` + `budget_breach_reason` — the tool-call/wall-clock ceiling; breach *response* stays app-specific |
@@ -59,6 +60,12 @@ library to work around it: `build_tracing_callbacks` binds the tracer to a
 key only lived in `.env`), and `CostTrackingHandler` reads the node from the
 start event, falls back to `usage_metadata` for structured-output calls, and
 prices dated model snapshots by family. See `CHANGELOG.md`.
+
+**v0.4** extracts the run infrastructure that had five or six copies across
+consumers: the events/costs half of every `RunStore`, the run executor loop,
+the replay-then-tail SSE stream, the prompt loader and the health route. Each
+consumer keeps what a run is *about* — its `runs` table, initial state, node
+set and what "finished" means.
 
 Still deliberately absent, pending a validated second occurrence:
 `retrieval` (no consumer has yet needed the intended vector-store shape),

@@ -26,4 +26,8 @@ nav:
       - api: api/api.md
       - cost: api/cost.md
       - serialization: api/serialization.md
+      - runs: api/runs.md
+      - prompts: api/prompts.md
+      - guardrails: api/guardrails.md
+      - evals: api/evals.md
       - architecture: api/architecture.md

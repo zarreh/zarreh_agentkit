@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.4.0
+
+### Added
+- `runs.RunEventLog` — SQLite `<prefix>_events` / `<prefix>_costs` tables with
+  `append_event`, `get_events`, `record_costs`, `get_costs`. Consumers subclass
+  it and keep their own `runs` table, so existing databases are unchanged.
+- `runs.execute_run` — streams a graph, persists every genuine node step,
+  records per-node cost (a `CostTrackingHandler` is always attached), calls an
+  app `finalize(final_state)`, and marks the run failed on any exception.
+- `runs.replay_and_tail` — replay-then-tail SSE over persisted events. Drains
+  once more after the run is seen as finished, closing a window where an event
+  written between the last read and the status check was never streamed.
+- `serialization.iter_node_outputs` and `serialization.json_default`.
+- `prompts.PromptLoader`, `api.health.build_health_router`.
+- API docs pages for `runs`, `prompts`, `guardrails`, `evals`.
+
+### Changed
+- `serialization.stream_graph_events` is implemented on `iter_node_outputs`
+  (behaviour unchanged).
+
 ## 0.3.0
 
 ### Fixed

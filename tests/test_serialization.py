@@ -2,7 +2,12 @@ import json
 from collections.abc import AsyncIterator
 from typing import Any
 
-from zarreh_agentkit.serialization import END_NODE, stream_graph_events
+from zarreh_agentkit.serialization import (
+    END_NODE,
+    iter_node_outputs,
+    json_default,
+    stream_graph_events,
+)
 
 
 class FakeGraph:
@@ -118,3 +123,30 @@ async def test_real_graph_with_conditional_edge_yields_only_node_steps() -> None
 
     lines = [line async for line in stream_graph_events(workflow.compile(), {"n": 1})]
     assert [json.loads(line)["node"] for line in lines] == ["start", "finish", END_NODE]
+
+
+async def test_iter_node_outputs_restricts_to_node_names_and_passes_config() -> None:
+    seen_config: list[Any] = []
+
+    class ConfigGraph(FakeGraph):
+        async def astream_events(
+            self, initial_state: Any, *, version: str, config: Any = None
+        ) -> AsyncIterator[dict[str, Any]]:
+            seen_config.append(config)
+            for e in self._events:
+                yield e
+
+    graph = ConfigGraph([_node_end("a", {"x": 1}), _node_end("b", {"y": 2})])
+    out = [pair async for pair in iter_node_outputs(graph, {}, config={"k": 1}, node_names={"b"})]
+    assert out == [("b", {"y": 2})]
+    assert seen_config == [{"k": 1}]
+
+
+def test_json_default_dumps_models_and_stringifies_the_rest() -> None:
+    from pydantic import BaseModel
+
+    class M(BaseModel):
+        a: int
+
+    payload = json.loads(json.dumps({"m": M(a=1), "o": 1.5j}, default=json_default))
+    assert payload == {"m": {"a": 1}, "o": "1.5j"}

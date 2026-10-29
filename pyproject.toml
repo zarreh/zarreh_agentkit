@@ -1,6 +1,6 @@
 [project]
 name = "zarreh-agentkit"
-version = "0.3.0"
+version = "0.4.0"
 description = "Shared substrate for agent services: typed settings, observability, dual tracing, ASGI middleware, per-node cost accounting, SSE serialization, budget/projection guardrails, and an eval-runner shell. Extracted only from working implementations, never designed up front."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -74,11 +74,11 @@ root_package = "zarreh_agentkit"
 include_external_packages = true
 
 [[tool.importlinter.contracts]]
-name = "Layering: api/guardrails/evals depend on settings/serialization/cost, never the reverse"
+name = "Layering: api/guardrails/evals/runs depend on settings/serialization/cost, never the reverse"
 type = "layers"
 layers = [
     "zarreh_agentkit.api",
-    "zarreh_agentkit.guardrails | zarreh_agentkit.evals",
+    "zarreh_agentkit.guardrails | zarreh_agentkit.evals | zarreh_agentkit.runs",
     "zarreh_agentkit.serialization",
-    "zarreh_agentkit.cost | zarreh_agentkit.observability | zarreh_agentkit.settings",
+    "zarreh_agentkit.cost | zarreh_agentkit.observability | zarreh_agentkit.settings | zarreh_agentkit.prompts",
 ]
