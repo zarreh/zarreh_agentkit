@@ -2131,12 +2131,13 @@ wheels = [
 
 [[package]]
 name = "zarreh-agentkit"
-version = "0.2.1"
+version = "0.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
     { name = "langchain-core" },
     { name = "langgraph" },
+    { name = "langsmith" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "slowapi" },
@@ -2168,6 +2169,7 @@ requires-dist = [
     { name = "import-linter", marker = "extra == 'dev'", specifier = ">=2.1" },
     { name = "langchain-core", specifier = ">=0.3" },
     { name = "langgraph", specifier = ">=0.2" },
+    { name = "langsmith", specifier = ">=0.1" },
     { name = "mkdocs", marker = "extra == 'docs'", specifier = ">=1.6" },
     { name = "mkdocs-material", marker = "extra == 'docs'", specifier = ">=9.5" },
     { name = "mkdocstrings", extras = ["python"], marker = "extra == 'docs'", specifier = ">=0.27" },

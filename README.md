@@ -50,6 +50,16 @@ occurrences each), and the `evals` runner shell (one real implementation, one
 consumer waiting on it — promoted because the shell itself is what the
 second service needs, not a new metric set).
 
+**v0.2.1** filters `stream_graph_events` to genuine node boundaries and gives
+`configure_logging` an `extra_processors` hook (for a redactor).
+
+**v0.3** is a correctness release driven by consumers that had forked the
+library to work around it: `build_tracing_callbacks` binds the tracer to a
+`langsmith.Client` carrying the key (the ambient-env version 401'd whenever the
+key only lived in `.env`), and `CostTrackingHandler` reads the node from the
+start event, falls back to `usage_metadata` for structured-output calls, and
+prices dated model snapshots by family. See `CHANGELOG.md`.
+
 Still deliberately absent, pending a validated second occurrence:
 `retrieval` (no consumer has yet needed the intended vector-store shape),
 `mcp` (two services are meant to jointly harden the export convention before

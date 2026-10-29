@@ -13,10 +13,12 @@ from __future__ import annotations
 
 from collections.abc import MutableMapping, Sequence
 from contextvars import ContextVar
+from functools import lru_cache
 from typing import Any
 
 import structlog
 from langchain_core.callbacks.base import BaseCallbackHandler
+from langsmith import Client
 
 correlation_id: ContextVar[str] = ContextVar("correlation_id", default="")
 
@@ -57,18 +59,26 @@ def get_logger(name: str) -> structlog.stdlib.BoundLogger:
     return structlog.get_logger(name)  # type: ignore[no-any-return]
 
 
+@lru_cache
+def _langsmith_client(api_key: str) -> Client:
+    return Client(api_key=api_key)
+
+
 def build_tracing_callbacks(
     langsmith_api_key: str, langsmith_project: str
 ) -> list[BaseCallbackHandler]:
     """A `LangChainTracer` callback if LangSmith is configured, else none.
 
     Takes plain values rather than a settings object so it has no dependency
-    on any consuming service's settings shape. LangSmith itself reads the
-    API key from the ambient environment; the key is accepted here only to
-    gate whether tracing is attached at all.
+    on any consuming service's settings shape. The tracer is bound to a client
+    carrying the key explicitly: pydantic-settings reads `.env` into the
+    settings object but never exports it, so relying on an ambient
+    `LANGSMITH_API_KEY` made every trace upload fail with a 401.
     """
     if not langsmith_api_key:
         return []
     from langchain_core.tracers.langchain import LangChainTracer
 
-    return [LangChainTracer(project_name=langsmith_project)]
+    return [
+        LangChainTracer(project_name=langsmith_project, client=_langsmith_client(langsmith_api_key))
+    ]

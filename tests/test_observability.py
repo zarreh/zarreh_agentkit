@@ -1,6 +1,7 @@
 from collections.abc import MutableMapping
 from typing import Any
 
+import pytest
 import structlog
 
 from zarreh_agentkit.observability import (
@@ -82,3 +83,10 @@ def test_build_tracing_callbacks_returns_tracer_when_configured() -> None:
     tracer = callbacks[0]
     assert isinstance(tracer, LangChainTracer)
     assert tracer.project_name == "some-project"
+
+
+def test_build_tracing_callbacks_binds_client_to_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("LANGSMITH_API_KEY", raising=False)
+    monkeypatch.delenv("LANGCHAIN_API_KEY", raising=False)
+    tracer = build_tracing_callbacks("lsv2_explicit_key", "some-project")[0]
+    assert tracer.client.api_key == "lsv2_explicit_key"  # type: ignore[attr-defined]
