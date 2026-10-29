@@ -20,6 +20,8 @@ which is why the public surface is deliberately narrow.
 | `cost` | `CostTrackingHandler` + `CostEntry` — per-node token & cost attribution |
 | `serialization` | `stream_graph_events` — LangGraph `astream_events` → SSE payloads, one per genuine node boundary (`name == metadata["langgraph_node"]`), so conditional-edge routers do not surface as steps |
 | `guardrails.budget` | `Budget` + `budget_breach_reason` — the tool-call/wall-clock ceiling; breach *response* stays app-specific |
+| `guardrails.grounding` | `grounding_confidence`, `count_unsupported`, `unsupported_claims_feedback` — aggregation of per-claim grounding judgments; the claim/judgment schemas stay app-specific |
+| `guardrails.injection` | `INJECTION_PATTERNS` + `first_matching_rule` — the deterministic, named-rule injection screen under an LLM check |
 | `guardrails.projection` | `project_fields` — least-privilege allowlist projection of a Pydantic model; the allowlist itself stays app-specific |
 | `evals` | `run_eval_cli` — the run/print/gate shell behind `make eval`; scenario definitions and metrics stay app-specific |
 | `architecture` | Bundled import-linter contracts, checked in every consumer's CI |
@@ -67,8 +69,16 @@ the replay-then-tail SSE stream, the prompt loader and the health route. Each
 consumer keeps what a run is *about* — its `runs` table, initial state, node
 set and what "finished" means.
 
-Still deliberately absent, pending a validated second occurrence:
-`retrieval` (no consumer has yet needed the intended vector-store shape),
-`mcp` (two services are meant to jointly harden the export convention before
-it lands here — neither has yet), and any general-purpose log/text redaction
-primitive (only one service has this shape so far).
+**v0.5** promotes the grounding-judgment aggregation (two services) and the
+deterministic injection screen (two services, catalogues merged).
+
+Still deliberately absent, because the second occurrence did not share a core:
+
+- `retrieval` — the two Qdrant consumers diverge (one uses `langchain-qdrant`
+  stores over two corpora with a keyword fallback; the other a raw client with
+  a mandatory per-record filter). Revisit when a third consumer settles it.
+- log/text redaction — still one service. Another service's output scanner
+  *blocks* leaks rather than redacting them, which is a different primitive.
+- output scanning — the rules (PIN disclosure, cross-account references,
+  clinical claim coverage) are domain policy, not mechanism.
+- `mcp` — no consumer exports an MCP server yet.

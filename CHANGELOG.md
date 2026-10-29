@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.5.0
+
+### Added
+- `guardrails.grounding` — `grounding_confidence`, `count_unsupported`,
+  `unsupported_claims_feedback`, `ClaimJudgmentLike`.
+- `guardrails.injection` — `INJECTION_PATTERNS` (union of two services'
+  catalogues, named rules) and `first_matching_rule`.
+
+### Deferred (documented in the README)
+- `retrieval`, redaction, output scanning, `mcp`.
+
 ## 0.4.0
 
 ### Added
